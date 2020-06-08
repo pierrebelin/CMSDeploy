@@ -1,0 +1,85 @@
+version: '3.7'
+
+services:
+  mysql:
+    image: mysql:5.7
+    volumes:
+      - wp_db:/var/lib/mysql/
+    environment:
+      MYSQL_ROOT_PASSWORD: somewordpress
+      MYSQL_DATABASE: wordpress
+      MYSQL_USER: wordpress
+      MYSQL_PASSWORD: wordpress
+    networks:
+      - default
+
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    depends_on:
+      - mysql
+    ports:
+      - 7777:80
+    environment:
+      PMA_HOST: mysql
+      MYSQL_ROOT_PASSWORD: password 
+    deploy:
+      labels:
+        - "traefik.enable=true"
+        - "traefik.http.routers.pmawp.rule=Host(`pmawp.localhost`)"
+        - "traefik.http.routers.pmawp.service=pmawp"
+        - "traefik.http.services.pmawp.loadbalancer.server.port=80"
+        - "traefik.docker.network=inbound"
+      placement:
+        constraints:
+          - node.role == manager
+      restart_policy:
+        condition: on-failure
+    networks:
+      - inbound
+      - default
+
+  wordpress:
+    image: wordpress:latest
+    depends_on:
+      - mysql
+    volumes:
+      - wp_statics:/var/www/html/
+    ports:
+      - 8000:80
+    environment:
+        WORDPRESS_DB_HOST: mysql:3306
+        WORDPRESS_DB_USER: wordpress
+        WORDPRESS_DB_PASSWORD: wordpress
+    networks:
+      - inbound
+      - default
+    deploy:
+      labels:
+        - "traefik.enable=true"
+        - "traefik.http.routers.wp.rule=Host(`wp.localhost`)"
+        - "traefik.http.routers.wp.service=wp"
+        - "traefik.http.services.wp.loadbalancer.server.port=80"
+        - "traefik.docker.network=inbound"
+      placement:
+        constraints:
+          - node.role == manager
+      restart_policy:
+        condition: on-failure
+    
+networks:
+  inbound:
+    external: true
+
+volumes:
+  wp_db:
+    driver: local
+    driver_opts:
+      o: bind
+      type: none
+      device: /Users/pierre/Documents/Developpements/Docker/wordpress/wordpress/mysql
+  wp_statics:
+    driver: local
+    driver_opts:
+      o: bind
+      type: none
+      device: /Users/pierre/Documents/Developpements/Docker/wordpress/wordpress/wp_statics

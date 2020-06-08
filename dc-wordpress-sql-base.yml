@@ -1,0 +1,26 @@
+version: '3.7'
+
+services:
+%%SQL%%
+
+%%PHPMYADMIN%%
+
+%%WORDPRESS%%
+
+networks:
+    traefik:
+        external: true
+
+volumes:
+    db:
+        driver: local
+        driver_opts:
+            o: bind
+            type: none
+            device: %%PATH_VOLUME_DB%%
+    content:
+        driver: local
+        driver_opts:
+            o: bind
+            type: none
+            device: %%PATH_VOLUME_CMS%%

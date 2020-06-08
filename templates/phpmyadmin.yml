@@ -1,0 +1,24 @@
+    phpmyadmin:
+        image: phpmyadmin/phpmyadmin
+        depends_on:
+            - %%CONTAINER_DB_NAME%%
+        ports:
+            - %%PMA_PORT%%:80
+        environment:
+            PMA_HOST: %%CONTAINER_DB_NAME%%
+            MYSQL_ROOT_PASSWORD: password 
+        deploy:
+            labels:
+            - "traefik.enable=true"
+            - "traefik.http.routers.pma%%PROJECT_NAME%%.rule=Host(`pma.%%PROJECT_NAME%%.localhost`)"
+            - "traefik.http.routers.pma%%PROJECT_NAME%%.service=pma%%PROJECT_NAME%%"
+            - "traefik.http.services.pma%%PROJECT_NAME%%.loadbalancer.server.port=80"
+            - "traefik.docker.network=traefik"
+            placement:
+                constraints:
+                - node.role == manager
+            restart_policy:
+                condition: on-failure
+        networks:
+            - traefik
+            - default

@@ -1,0 +1,28 @@
+    wordpress:
+        image: wordpress:latest
+        depends_on:
+            - %%CONTAINER_DB_NAME%%
+        volumes:
+            - content:/var/www/html/
+        ports:
+            - %%CMS_PORT%%:80
+        environment:
+            WORDPRESS_DB_HOST: %%CONTAINER_DB_NAME%%:3306
+            WORDPRESS_DB_NAME: %%DB_NAME%%
+            WORDPRESS_DB_USER: %%DB_USER%%
+            WORDPRESS_DB_PASSWORD: %%DB_PASSWORD%%
+        networks:
+            - traefik
+            - default
+        deploy:
+            labels:
+                - "traefik.enable=true"
+                - "traefik.http.routers.%%PROJECT_NAME%%.rule=Host(`%%PROJECT_NAME%%.localhost`)"
+                - "traefik.http.routers.%%PROJECT_NAME%%.service=%%PROJECT_NAME%%"
+                - "traefik.http.services.%%PROJECT_NAME%%.loadbalancer.server.port=80"
+                - "traefik.docker.network=traefik"
+            placement:
+                constraints:
+                - node.role == manager
+            restart_policy:
+                condition: on-failure

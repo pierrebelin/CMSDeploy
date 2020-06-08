@@ -1,0 +1,86 @@
+version: '3.7'
+
+services:
+    mysql:
+        image: mysql:5.7
+        volumes:
+            - db:/var/lib/mysql/
+        environment:
+            MYSQL_DATABASE: jose
+            MYSQL_USER: jose
+            MYSQL_PASSWORD: rksKK%bNB9ATGZFb
+            MYSQL_ROOT_PASSWORD: ubE8Iv!(C.FmBy60
+        networks:
+            - default
+
+    phpmyadmin:
+        image: phpmyadmin/phpmyadmin
+        depends_on:
+            - mysql
+        ports:
+            - 7777:80
+        environment:
+            PMA_HOST: mysql
+            MYSQL_ROOT_PASSWORD: password 
+        deploy:
+            labels:
+            - "traefik.enable=true"
+            - "traefik.http.routers.pmajose.rule=Host(`pma.jose.localhost`)"
+            - "traefik.http.routers.pmajose.service=pmajose"
+            - "traefik.http.services.pmajose.loadbalancer.server.port=80"
+            - "traefik.docker.network=traefik"
+            placement:
+                constraints:
+                - node.role == manager
+            restart_policy:
+                condition: on-failure
+        networks:
+            - traefik
+            - default
+
+    wordpress:
+        image: wordpress:latest
+        depends_on:
+            - mysql
+        volumes:
+            - content:/var/www/html/
+        ports:
+            - 8000:80
+        environment:
+            WORDPRESS_DB_HOST: mysql:3306
+            WORDPRESS_DB_NAME: jose
+            WORDPRESS_DB_USER: jose
+            WORDPRESS_DB_PASSWORD: rksKK%bNB9ATGZFb
+        networks:
+            - traefik
+            - default
+        deploy:
+            labels:
+                - "traefik.enable=true"
+                - "traefik.http.routers.jose.rule=Host(`jose.localhost`)"
+                - "traefik.http.routers.jose.service=jose"
+                - "traefik.http.services.jose.loadbalancer.server.port=80"
+                - "traefik.docker.network=traefik"
+            placement:
+                constraints:
+                - node.role == manager
+            restart_policy:
+                condition: on-failure
+
+networks:
+    traefik:
+        external: true
+
+volumes:
+    db:
+        driver: local
+        driver_opts:
+            o: bind
+            type: none
+            device: /Users/pierre/Documents/Developpements/Sites/cmsdeploy/stacks/jose/db
+    content:
+        driver: local
+        driver_opts:
+            o: bind
+            type: none
+            device: /Users/pierre/Documents/Developpements/Sites/cmsdeploy/stacks/jose/content
