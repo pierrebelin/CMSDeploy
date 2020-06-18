@@ -8,8 +8,8 @@ services:
         environment:
             MYSQL_DATABASE: asalog
             MYSQL_USER: asalog
-            MYSQL_PASSWORD: !ggk-.B6n*ZvM+H
-            MYSQL_ROOT_PASSWORD: -bTg-z`hOPQKrYbM
+            MYSQL_PASSWORD: EEJZ`cT/h&\kupZ(
+            MYSQL_ROOT_PASSWORD: kU!a7%NY(4yO8H|b
         networks:
             - default
 
@@ -50,7 +50,7 @@ services:
             WORDPRESS_DB_HOST: mysql:3306
             WORDPRESS_DB_NAME: asalog
             WORDPRESS_DB_USER: asalog
-            WORDPRESS_DB_PASSWORD: !ggk-.B6n*ZvM+H
+            WORDPRESS_DB_PASSWORD: EEJZ`cT/h&\kupZ(
         networks:
             - traefik
             - default

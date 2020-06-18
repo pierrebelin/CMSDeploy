@@ -10,8 +10,10 @@ use CMSDeploy\Creator;
 const PATH_TEMPLATES = __DIR__ . '/templates/';
 const PATH_STACKS = __DIR__ . '/stacks/';
 
-$projectName = 'jose';
+$cleanFiles = true;
+$projectName = 'asalog';
 $baseFile = 'dc-wordpress-sql-base.yml';
+
 $projectName = Creator\CreatorTools::cleanString($projectName);
 
 if (is_dir(PATH_STACKS . $projectName)) {
@@ -26,8 +28,11 @@ $dbName = $projectName;
 $dbUser = $projectName;
 
 $containerDbName = 'mysql';
+
+// TODO Connaitre les ports disponibles
 $portCMS = 8000;
 $portPHPMyAdmin = 7777;
+
 $volumeDBName = 'db';
 $volumeCMSName = 'content';
 
@@ -73,4 +78,7 @@ if (!is_dir($pathFolderCMS)) {
 }
 $fileContent = str_replace('%%PATH_VOLUME_CMS%%', $pathFolderCMS, $fileContent);
 
-file_put_contents('end.yml', $fileContent);
+$dockerFile = $projectName . '.yml';
+file_put_contents($dockerFile, $fileContent);
+
+shell_exec('docker stack deploy -c ' . $dockerFile . ' ' . $projectName);
